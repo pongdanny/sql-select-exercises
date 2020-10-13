@@ -29,8 +29,8 @@
 2.1) Write a SQL query that returns the city, state, and estimated population in
      2018 from the "cities" table.
 */
+SELECT city, state, population_estimate_2018 FROM cities;
 
--- your query here
 
 \echo ========= Problem 2.2 ====================================================
 \echo
@@ -39,7 +39,7 @@
      "airports" table.
 */
 
--- your query here
+SELECT FAA_id FROM airports;
 
 ---- Phase 3: Add WHERE clauses ------------------------------------------------
 -- Select specific rows from a table using WHERE and common operators.
@@ -50,8 +50,8 @@
 3.1) Write a SQL query that uses a WHERE clause to get the estimated population
      in 2018 of the city of San Diego.
 */
+SELECT city, population_estimate_2018 FROM cities WHERE city = 'San Diego';
 
--- your query here
 
 \echo ========= Problem 3.2 ====================================================
 \echo
@@ -60,8 +60,8 @@
      estimated population in 2018 of cities in this list:
       Phoenix, Jacksonville, Charlotte, Nashville.
 */
-
- -- your query here
+SELECT city, state, population_estimate_2018 FROM cities WHERE city IN ('Phoenix', 'Jacksonville', 'Charlotte', 'Nashville');
+ 
 
 \echo ========= Problem 3.3 ====================================================
 \echo
@@ -70,8 +70,8 @@
      estimated 2018 population between 800,000 and 900,000 people. Show the
      city, state, and estimated population in 2018 columns.
 */
+SELECT city, state, population_estimate_2018 FROM cities WHERE population_estimate_2018 > 800000 AND population_estimate_2018 < 900000;
 
--- your query here
 
 \echo ========= Problem 3.4 ====================================================
 \echo
@@ -80,8 +80,8 @@
      that had an estimated population in 2018 of at least 1 million people (or
      1,000,000 people).
 */
+SELECT city FROM cities WHERE population_estimate_2018 >= 1000000;
 
--- your query here
 
 \echo ========= Problem 3.5 ====================================================
 \echo
@@ -90,8 +90,8 @@
      number of millions (i.e. without zeroes at the end: 1 million), and that
      uses a WHERE clause to return only the cities in Texas.
 */
+SELECT city, (population_estimate_2018)/1000000 FROM cities WHERE state = 'Texas';
 
--- your query here
 
 \echo ========= Problem 3.6 ====================================================
 \echo
@@ -104,7 +104,7 @@
      New York, California, Texas.
 */
 
--- your query here
+SELECT city, state, population_estimate_2018 FROM cities WHERE state NOT IN ('New York', 'California', 'Texas');
 
 \echo ========= Problem 3.7 ====================================================
 \echo
@@ -115,8 +115,8 @@
      (Note: See the PostgreSQL doc on Pattern Matching for more information.)
 */
 
--- your query here
 
+SELECT city, state, population_estimate_2018 FROM cities WHERE city LIKE 'S%';
 \echo ========= Problem 3.8 ====================================================
 \echo
 /*
@@ -125,8 +125,10 @@
      (or 2,000,000 people). Show the city name, the land area, and the estimated
      population in 2018.
 */
+SELECT city, land_area_sq_mi_2016, population_estimate_2018
+FROM cities
+WHERE land_area_sq_mi_2016 > 400 OR population_estimate_2018 > 2000000;
 
--- your query here
 
 \echo ========= Problem 3.9 ====================================================
 \echo
@@ -137,7 +139,9 @@
      name, the land area, and the estimated population in 2018.
 */
 
--- your query here
+SELECT city, land_area_sq_mi_2016, population_estimate_2018
+FROM cities
+WHERE (land_area_sq_mi_2016 > 400 AND NOT population_estimate_2018 > 2000000) OR (population_estimate_2018 > 2000000 AND NOT land_area_sq_mi_2016 > 400);
 
 \echo ========= Problem 3.10 ===================================================
 \echo
@@ -147,8 +151,9 @@
       the city name, the estimated population in 2018, and the census population
       in 2010.
 */
-
--- your query here
+SELECT city, population_estimate_2018, population_census_2010 FROM cities
+WHERE (population_estimate_2018 - population_census_2010) > 200000;
+-- WHERE population_census_2010 + 200000 < population_estimate_2018;
 
 ---- Phase 4: Use a JOIN operation ---------------------------------------------
 -- Retrieve rows from multiple tables joining on a foreign key.
@@ -162,8 +167,9 @@
      with data from the "airports" table using the city_id foreign key. Show the
      airport names and city names only.
 */
+SELECT city, FAA_id FROM cities
+INNER JOIN airports ON city_id = cities.id;
 
--- your query here
 
 \echo ========= Problem 4.2 ====================================================
 \echo
@@ -174,8 +180,9 @@
      (Note: Use the aggregate function COUNT() to count the number of matching
       rows.)
 */
+SELECT count(*) FROM cities INNER JOIN airports ON city_id = cities.id
+WHERE city = 'New York';
 
--- your query here
 
 --------------------------------------------------------------------------------
 ---- Bonuses:
@@ -192,7 +199,7 @@ B.1) Apostrophe: Write a SQL query to get all three ID codes (the Federal
      (Note: You'll need to escape the quotation mark in O'Hare. See How to
       include a single quote in a SQL query.)
 */
-
+SELECT FAA_id, IATA_id, ICAO_id FROM airports WHERE name = 'Chicago O''Hare International Airport';
 -- your query here
 
 \echo ========= Problem B.2 ====================================================
@@ -205,7 +212,7 @@ B.2) Formatting Commas: Refactor Phase 2, Query #1 to turn the INT for estimated
      * Phase 2, Query #1: Write a SQL query that returns the city, state, and
        estimated population in 2018 from the "cities" table.
 */
-
+SELECT city, state, to_char(population_estimate_2018, '333,333') FROM cities;
 -- your query here
 
 \echo ========= Problem B.3 ====================================================
@@ -221,7 +228,7 @@ B.3) Decimals and Rounding: Refactor Phase 3, Query #5 to turn number of
        end: 1 million), and that uses a WHERE clause to return only the cities
        in Texas.
 */
-
+SELECT city, ROUND(population_estimate_2018 * 0.000001, 10) FROM cities WHERE state = 'Texas';
 -- your query here
 
 \echo ========= Problem B.4 ====================================================
@@ -240,7 +247,8 @@ B.4) ORDER BY and LIMIT Clauses: Refactor Phase 3, Query #10 to return only one
        2010 to 2018. Show the city name, the estimated population in 2018, and
        the census population in 2010.
 */
-
+SELECT city, population_estimate_2018, population_census_2010 FROM cities
+ORDER BY (population_estimate_2018 - population_census_2010) > 200000 LIMIT 1;
 -- your query here
 
 \echo ========= (done!) ========================================================
